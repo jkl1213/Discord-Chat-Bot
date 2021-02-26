@@ -1,0 +1,1151 @@
+import discord
+import time
+import os
+import operator
+from discord.ext import commands
+from random import sample
+from random import randint
+from functools import reduce
+from asyncio import sleep
+import pandas as pd
+import numpy as np
+import shutil
+from shutil import copyfile
+
+
+
+book_template = pd.read_csv("path/books/template.csv")
+how_many_books = len(book_template)
+
+
+ans = []
+bot=commands.Bot(command_prefix=["Lizzy ", "lizzy ","Lisa ", "lisa ", "ls ", "Ls ","LISA "] ,case_insensitive=True)
+def get_fortune(sign):
+    data = pd.read_csv("path/books/fortune_new.csv", header=0)
+    fortunes = data[data["sign"]==sign]
+    n = randint(0,len(fortunes)-1)
+    fortune = str(fortunes.iloc[n,1]).strip()
+   
+    return fortune
+
+@bot.command()
+async def pic(message):
+    file = discord.File("path/lisa_pic.png", filename="lisa_pic.png")
+    embed = discord.Embed()
+    embed.set_image(url="attachment://image.png")
+    await message.channel.send(file=file, embed=embed)
+
+@bot.command()
+async def read(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id
+       print(user_id)
+       #check if it's a new user
+       users = open("path/books/users.txt","r")
+       data = users.read()
+       if str(user_id) in data: 
+           #open user's profile
+           user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+           #get user's current book no
+           user_current = user_data[user_data['Current book'] == 1].iloc[0,0]
+           print("book no: ",str(user_current))
+           #get user's current book's name
+           user_book_name = user_data[user_data['Current book'] == 1].iloc[0,1]
+           print("book name: ",str(user_book_name))
+           #get user's current book's path
+           user_book_path = user_data[user_data['Current book'] == 1].iloc[0,2]
+           print("book path: ",str(user_book_path))
+           #get user's current book's progress
+           user_progress = user_data[user_data['Current book'] == 1].iloc[0,3]
+           print("user_progress : ",str(user_progress))
+           #get book's language
+           book_lang = user_data[user_data['Current book'] == 1].iloc[0,4]
+           print("book lang: ",book_lang)
+           #get book's price
+           book_price = int(user_data[user_data['Current book'] == 1].iloc[0,6])
+           #get user's inventory
+           user_money = int(user_data.iloc[0,7])
+           #check if user has enough money
+           if user_money >= book_price:
+           #open user's book
+               if book_lang == 1:
+                   with open("path/books/" + user_book_path,encoding='cp1252') as file:
+                       book_raw = file.read()
+                       #.replace('\n', '')
+                   page = user_progress * 1000
+                   next_page = page + 1000
+                   book = book_raw[page:next_page]+ "..."
+                   await message.message.channel.send("*The story goes like this...* " + book+":scroll:")
+                   file.close()
+                   #record the page change
+                   user_data.iloc[user_current-1,3] = user_progress + 1
+                   #update new balance
+                   user_data.iloc[0,7] = user_money - book_price
+                   user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+               if book_lang == 0:
+                   with open("path/books/" + user_book_path,encoding='utf8') as file:
+                       book_raw = file.read()
+                       #.replace('\n', '')
+                   page = user_progress * 500
+                   next_page = page + 500
+                   book = book_raw[page:next_page]+ "..."
+                   await message.message.channel.send("*The story goes like this...* " + book+":scroll:")
+                   file.close()
+                   #record the page change
+                   user_data.iloc[user_current-1,3] = user_progress + 1
+                   #update new balance
+                   user_data.iloc[0,7] = user_money - book_price
+                   user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                   
+               dice = randint(1,100)
+               if dice == 1:
+                   #get id
+                   user_id = message.author.id
+                   #get user data
+                   user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                   #get sign
+                   sign = str(user_data.iloc[0,10])
+                   await message.channel.send("***:crystal_ball:The mystery of the future unfolds before you...it reads: ***")
+                   await message.channel.send("*" + get_fortune(sign) + "*")
+
+
+           else:
+              await message.channel.send("You ran out of blueberries..go find some to continue reading!:palm_tree:")
+       else:
+            await message.channel.send("Sorry, but you are not a memeber of the club.")
+
+            
+           
+#jump to some page
+#changing book
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+    
+    else: 
+        #if cop question comes up
+        if 'epic guard' in message.content.lower() or 'epp' in message.content.lower():
+            
+            #check if js is mentioned (js id is in cop message)
+            if ID in message.content.lower():
+                id = id1
+                #get user object with id above
+                user = bot.get_user(id)
+                #send dm
+                await user.send(content='epic guard alert')
+            #check if jh is mentioned 
+            elif ID in message.content.lower():                
+                id = id2
+                #get user object with id above
+                user = bot.get_user(id)
+                #send dm
+                await user.send(content='epic guard alert')
+
+            image = message.attachments[0]
+            await image.save('path/Desktop/Keras/Images/exp/attachment.jpg', seek_begin=True, use_cached=False)
+    
+            result = fish_coin()
+            print(result)
+            for i in result:
+                
+                await message.channel.send("It's a "+str(i) +" with a rounded probability of "+str(result.get(i)))
+                
+                
+            os.rename('path/Desktop/Keras/Images/exp/attachment.jpg', 'path/Desktop/Keras/Images/used/attachment.jpg')
+            
+        book = ["change"]
+        if str(book[0]) in message.content.lower():
+            user_id = message.author.id
+            #check if it's a new user
+            users = open("path/books/users.txt","r")
+            data = users.read()
+            if str(user_id) in data:
+                #get id
+                user_id = message.author.id
+                command = str(message.content.lower())
+                #get new book no
+                book_index = int(command.lstrip("change "))
+                #update the profile
+                #open user's profile
+                user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")     
+                user_current = user_data[user_data['Current book'] == 1].iloc[0,0]
+                #record the book change
+                user_data.iloc[user_current-1,5] = 0
+                user_data.iloc[book_index-1,5] = 1
+                #get new book name
+                user_book = user_data.iloc[book_index-1,1]
+                user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                await message.channel.send("You are now reading " + str(user_book) + "!")
+            else:
+                await message.channel.send("Sorry, you're not a member.")
+            
+        if "page" in message.content.lower():
+            user_id = message.author.id
+            #check if it's a new user
+            users = open("path/books/users.txt","r")
+            data = users.read()
+            if str(user_id) in data:
+                #get id
+                user_id = message.author.id
+                command = str(message.content.lower())
+                #get new page no
+                page_index = int(command.lstrip("page "))
+                #update the profile
+                #open user's profile
+                user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")     
+                user_current = user_data[user_data['Current book'] == 1].iloc[0,0]
+                #record the page change
+                user_data.iloc[user_current-1,3] = page_index
+                user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                #get user's current book's path
+                user_book_path = user_data[user_data['Current book'] == 1].iloc[0,2]
+                #get user's current book's progress
+                user_progress = user_data[user_data['Current book'] == 1].iloc[0,3]
+                #get book's language
+                book_lang = user_data[user_data['Current book'] == 1].iloc[0,4]
+                #get book's price
+                book_price = int(user_data[user_data['Current book'] == 1].iloc[0,6])
+                #get user's inventory
+                user_money = int(user_data.iloc[0,7])
+                #check if user has enough money
+                if user_money >= book_price:
+
+                    #open user's book
+                    if book_lang == 1:
+                        with open("path/books/" + user_book_path,encoding='cp1252') as file:
+                           book_raw = file.read()
+                           #.replace('\n', '')
+                        page = page_index * 1000
+                        next_page = page + 1000
+                        book = book_raw[page:next_page]+ "..."
+                        await message.channel.send("*The story goes like this... *" + book+ ":scroll:")
+                        file.close()
+                        #record the page change
+                        user_data.iloc[user_current-1,3] = user_progress + 1
+                        #update new balance
+                        user_data.iloc[0,7] = user_money - book_price
+                        user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                    if book_lang == 0:
+                        with open("path/books/" + user_book_path,encoding='utf8') as file:
+                           book_raw = file.read()
+                           #.replace('\n', '')
+                        page = page_index * 500
+                        next_page = page + 500
+                        book = book_raw[page:next_page]+ "..."
+                        await message.channel.send("*The story goes like this...* " + book +":scroll:")
+                        file.close()
+                        #record the page change
+                        user_data.iloc[user_current-1,3] = user_progress + 1
+                        #update new balance
+                        user_data.iloc[0,7] = user_money - book_price
+                        user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                    dice = randint(1,100)
+                    if dice == 1:
+                        #get id
+                       user_id = message.author.id
+                       #get user data
+                       user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                       #get sign
+                       sign = str(user_data.iloc[0,10])
+                       await message.channel.send("***:crystal_ball:The mystery of the future unfolds before you...it reads: ***")
+                       await message.channel.send("*" + get_fortune(sign) + "*")
+                else:
+                    await message.channel.send("You ran out of blueberries..go find some to continue reading!:palm_tree:")
+        
+        #open solution data
+        sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+        #find all rows where it's not NA; sols contains all current solutions
+        sols = sols_data[pd.notna(sols_data['sol'])]["sol"].tolist()
+        
+        #old: sols = wordscape.read()
+        #give up keyword list
+        give_up = ["not know","give up", "idk", "don't know"]
+        if len(sols) >0:
+            sol = ""
+            #a = 1 -> one solution found; a = 0 -> no solution found
+            a = 0
+            for i in sols:
+                if i in message.content.lower():
+                    sol = i
+                    a = 1
+                    break
+            if a == 1:
+                
+                
+                await message.channel.send("The answer is " + str(sol) + "~")
+                response = ["I can't believe you found the right answer. let me think of a way to reward you...", "that was surprisingly swift.. I see you have been reading more in my library",
+              "You were just a young girl when you joined the knights, and in the blink of an eye, you have turned into such a strong young lady. I'm curious to see what you will be like a few years from now.",
+              "When you cast your spells as fast as now, you can do half the work for double the impact. Haha, I'm just teasing.",
+              "Such intelligence..Why not keep me company for a while... There'll be plenty of time for work later..."]
+  
+                await message.channel.send(str(response[randint(0,4)]))
+                connected = message.author.voice
+                if connected:
+                    vc = await connected.channel.connect()
+                    source = discord.FFmpegOpusAudio("lisa_reward.mp3",bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+                    vc.play(source=source,after=None)
+                    while vc.is_playing():
+                        await sleep(1)
+                    await vc.disconnect()
+                rewards = [":blueberries:",":blueberries:", ":tomato:", ":tomato:",":tomato:",":potato:",":potato:"]
+                rewards_index = [7,7,8,8,8,9,9]
+                time.sleep(2)
+                print("sol : ", sol)
+                print("sol len: ", len(sol))
+                num = randint(len(sol)-1, len(sol)+5)
+                reward = randint(0,6)
+                
+            #open current player's profile
+            #current_player = open("current_player_id.txt","r")
+            #user_id = str(current_player.read())
+                
+                user_idd = str(sols_data[sols_data["sol"]==sol].iloc[0,2])
+                
+                user_id = user_idd.strip("a")
+                print(type(user_id))
+                print(user_id)
+                
+            #find where the solution is in wordscape csv
+                sol_index = sols_data[sols_data["sol"]==sol].iloc[0,0]-1
+                print("index of sol: ",sol_index)
+                x = sols_data.iloc[sol_index,3]
+                sols_data.iloc[sol_index,[1,2,3]] = np.nan
+            #save updated csv
+                sols_data.to_csv("path/books/wordscape.csv",index=False,float_format='%f')
+
+                user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+            #check if its consecutive solve
+                solve = int(user_data.iloc[0,11])
+                if solve == 0 or solve == np.nan:
+                    await message.channel.send("I will gift you.." + str(num) + " "+ str(rewards[reward]) + " as a reward for your wisedom")
+                    await message.channel.send("*Congrats! This is your first solve!*")
+                    
+                elif solve == 1:
+                    num = round(num*(1+(solve/10)))
+                    await message.channel.send("I will gift you.." + str(num) + " "+ str(rewards[reward]) + " as a reward for your wisedom")
+                    await message.channel.send("*Congrats! This is your second consecutive solve! \n Rewards bonus: " + str(solve*10)+"%*")
+                elif solve > 1:
+                    print("reward is ", num)
+                    num = round(num*(1+(solve/10)))
+                    await message.channel.send("I will gift you.." + str(num) + " "+ str(rewards[reward]) + " as a reward for your wisedom")
+                    print("reward multiplier is ", (1+(solve/10)))
+                    await message.channel.send("*Wow! Numerous solves in a roll!:fire: \n Rewards bonus: +" + str(solve*10)+"%*")
+            #record gain
+                A = user_data.iloc[0,rewards_index[reward]]
+                
+                user_data.iloc[0,rewards_index[reward]] = A + num
+                user_data.iloc[0,11] = solve + 1
+                print("This is solve number ", solve+1)
+                user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                open("wordscape.txt", "w").close()
+                dice = randint(1,10)
+                if dice == 9:
+                   #get id
+                       user_id = message.author.id
+                       #get user data
+                       user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                       #get sign
+                       sign = str(user_data.iloc[0,10])
+                       await message.channel.send("***:crystal_ball:The mystery of the future unfolds before you...it reads: ***")
+                       await message.channel.send("*" + get_fortune(sign) + "*")
+        
+        if "trade p" in message.content.lower():
+                #get id
+                user_id = message.author.id
+                command = str(message.content.lower())
+                #get new trade no
+                trade_index = int(command.lstrip("trade p "))
+                #get user data
+                user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                #get user's current inventory
+                blueb = user_data.iloc[0,7]
+                toma = user_data.iloc[0,8]
+                pota = user_data.iloc[0,9]
+                if int(pota)/5 >= trade_index:
+                    #update new balance
+                    old_blue = user_data.iloc[0,7]
+                    user_data.iloc[0,7] = int(old_blue) + trade_index
+                    old_pota = user_data.iloc[0,9] 
+                    user_data.iloc[0,9] = int(old_pota) - trade_index*5
+                    user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                    await message.channel.send(str(trade_index*5) + ":potato: have been traded for " + str(trade_index) + ":blueberries: !")
+                else:
+                    await message.channel.send("My dear traveller, you don't have enough potatoes to finish this trade. :tophat:")
+        elif "trade t" in message.content.lower():
+                #get id
+                user_id = message.author.id
+                command = str(message.content.lower())
+                #get new trade no
+                trade_index = int(command.lstrip("trade t "))
+                #get user data
+                user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                #get user's current inventory
+                blueb = user_data.iloc[0,7]
+                toma = user_data.iloc[0,8]
+                pota = user_data.iloc[0,9]
+                if int(toma)/2 >= trade_index:
+                    #update new balance
+                    old_blue = int(user_data.iloc[0,7])
+                    user_data.iloc[0,7] = int(old_blue) + trade_index
+                    old_toma = int(user_data.iloc[0,8]) 
+                    user_data.iloc[0,8] = int(old_toma) - trade_index*2
+                    user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                    await message.channel.send(str(trade_index*2) + ":tomato: have been traded for " + str(trade_index) + ":blueberries: !")
+                else:
+                    await message.channel.send("My dear...you don't have enough tomatoes to finish this trade. :tophat:")
+        elif "hint" in message.content.lower():
+               #get id
+                user_id = message.author.id
+                user_idd = "a" + str(user_id) + "a"
+                #get user's sol
+                sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+                user_index = sols_data[sols_data["id"]==user_idd].iloc[0,0]
+                sols = sols_data.iloc[user_index-1,1]
+                print(sols)
+                #get user data
+                user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                #get user's current inventory
+                blueb = user_data.iloc[0,7]
+                toma = user_data.iloc[0,8]
+                pota = user_data.iloc[0,9]
+                if int(pota)>= 2:
+                    #update new balance
+                    old_pota = int(user_data.iloc[0,9]) 
+                    user_data.iloc[0,9] = int(old_pota) - 2
+                    user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                    await message.channel.send("A hint has been unlocked :unlock:")
+                
+                    hint = randint(0,len(sols)-1)
+                    
+                    if hint == 0:
+                        await message.channel.send("Could it be..a word that starts with "+ str(sols)[0]+ "?:hourglass_flowing_sand:")
+                    else:
+                        await message.channel.send("Could it be..a word whose letter in position "+ str(hint+1) +" is " + "**'" + str(sols)[hint] + "'**"+ "?:hourglass_flowing_sand:")
+                    await message.channel.send("Two potatoes have been charged for this hint.")
+                else:
+                    await message.channel.send("My dear...you don't have enough potato to get a hint. :lock:")
+        elif "constellation" in message.content.lower():
+               #get id
+                user_id = message.author.id
+                command = str(message.content.lower())
+                #get user sign
+                signs = ["aries", "taurus", "gemini", "cancer", "leo", "virgo", "libra", "scorpio", "sagittarius", "capricorn","aquarius","pisces"]
+                sign = command[14:]
+                print(sign)
+                #check if sign is a real sign
+                y = sign in signs
+                print(y)
+                if y == True:
+                    #get user data
+                    user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                   #update user's sign
+                    user_data.iloc[0,10] = ""
+                    user_data.iloc[0,10] = sign
+                    user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+                
+                    await message.channel.send(":star_and_crescent:The stars have aligned...your constellation has been noted carefully")
+                else:
+                    await message.channel.send(sign +" is not a constallation..my dear")
+        elif "bye" in message.content.lower() or "ttyl" in message.content.lower():
+                bye = ["It must almost be time for a nap...",
+           "So soon? When I taught Razor how to utilize Elemental Energy, I never expected him to master the technique so quickly. Come to think of it, you're talented too. Maybe I could teach you a few tricks...but now, it's nearly time for afternoon tea.",
+           "It must be late now...Talk to me next time and I suppose it can't hurt to teach you some of the basics of electro magic.", "Hey darling, would you like to try one of my magic potions before going? There's no knowing what it will do to you until you try it, though... Don't say I didn't warn you!",
+           "So soon? Do you want to try one of my magical potion? There's no knowing what it will do to you..don't say I didn't warn you"]
+                index = randint(0,3)
+                if index == 3:
+                    connected = message.author.voice
+                    if connected:
+                        vc = await connected.channel.connect()
+                        source = discord.FFmpegOpusAudio(source="lisa_potion.mp3",bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+                        vc.play(source=source,after=None)
+                        while vc.is_playing():
+                            await sleep(1)
+                        await vc.disconnect()
+                await message.channel.send(bye[index])
+        elif "hi lisa" in message.content.lower() or "hello" in message.content.lower():
+            hi = ["*yawns* Good morning, Jean... Oh it's you! Sorry, dear.",
+          "Hi darling, are you going to be Lisa's little helper? What? Me, a grand mage? That was a long time ago, I'm just a humble librarian now. *chuckles* Don't worry darling, I'll take very good care of you.",
+          "Hi darling. Today's no good for going out... Hmm... Did I say that yesterday as well?",
+          "You're still up? Feel free to use the alchemist's upstairs from the library whenever you want. But make sure you knock first, we wouldn't want you seeing anything you're not supposed to, now would we?"]
+            hi_path =["lisa_jean.mp3","lisa_hi_darling.mp3","lisa_no_good.mp3","lisa_upstairs.mp3"]
+            #await ctx.message.channel.send(hi[randint(0,3)])
+            dialogue = randint(0,3)
+            await message.channel.send(hi[dialogue])
+            connected = message.author.voice
+            if connected:
+                vc = await connected.channel.connect()
+                source = discord.FFmpegOpusAudio(source=hi_path[dialogue],bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+                vc.play(source=source,after=None)
+                while vc.is_playing():
+                   await sleep(1)
+                await vc.disconnect()
+
+        else:
+            for i in give_up:
+                if i in message.content.lower():
+                    #get id
+                    user_id = message.author.id
+                    user_idd = "a" + str(user_id) + "a"
+                    #get user's sol
+                    sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+                    user_index = sols_data[sols_data["id"]==user_idd].iloc[0,0]
+                    sols = sols_data.iloc[user_index-1,1]
+                    sols_data.iloc[user_index-1,[1,2,3]] = np.nan
+                    #save updated csv
+                    sols_data.to_csv("path/books/wordscape.csv",index=False,float_format='%f')
+                
+                    #user data : solve reward bonus is reset
+                    #check if its consecutive solve
+                    user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                    user_data.iloc[0,11] = 0
+                    #save users data
+                    user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+
+                    await message.channel.send("The answer is " + str(sols) + "~")
+                    response = ["Hehe, never mind, your ignorance is somehow rather adorable."]
+                    await message.channel.send(str(response[0]))
+                    connected = message.author.voice
+                    if connected:
+                        vc = await connected.channel.connect()
+                        source = discord.FFmpegOpusAudio("lisa_ignorance.mp3",bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+                        vc.play(source=source,after=None)
+                        while vc.is_playing():
+                            await sleep(1)
+                        await vc.disconnect()
+                    open("wordscape.txt", "w").close()
+                    dice = randint(1,10)
+                    if dice == 9:
+                        #get id
+                        user_id = message.author.id
+                        #get user data
+                        user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                        
+                        #get sign
+                        sign = str(user_data.iloc[0,10])
+                        await message.channel.send("***:crystal_ball:The mystery of the future unfolds before you...it reads: ***")
+                        await message.channel.send("*" + get_fortune(sign) + "*")
+                    toss = 6
+                    if toss == 6:
+                        await message.channel.send("I happen to have some spare food.. just take some:basket:")
+                        rewards = [":tomato:", ":potato:",":potato:",":potato:"]
+                        rewards_index = [8,9,9,9]
+                        reward = randint(0,3)
+                        num = randint(len(sols)-2, len(sols))
+                        await message.channel.send("I will gift you.." + str(num) + " "+ str(rewards[reward]) + " as a souvenir for your courage")
+                        user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+                        #record gain
+                        A = user_data.iloc[0,rewards_index[reward]]
+            
+                        user_data.iloc[0,rewards_index[reward]] = A + num
+                        user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+            
+           
+                    
+    await bot.process_commands(message)
+    
+
+
+
+
+#creating new user account
+@bot.command()
+async def create(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id
+       #create profile
+       print(str(user_id) + ".csv")
+       copyfile("path/books/template.csv", "path/books/" + str(user_id) + ".csv")
+       #record the new user in user database
+       users = open("path/books/users.txt","a")
+       users.write("\n")
+       users.write(str(user_id))
+       users.close()
+       await message.channel.send("You have succesfully receieved the pass to the forbidden library!:scroll:")
+       await message.channel.send("Your user id: "+str(user_id))
+       #creating new user account
+       
+@bot.command()
+async def id(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = str(message.author.id)
+       await message.channel.send("Your id: "+ user_id)
+
+@bot.command()
+async def arena(ctx):
+       member = {'1': 'Person', '2': 'Person','3': 'Person (2nd account)',
+                 '4': 'Person','5':'Person (BANK)','6':'UE',
+                 '7':'Person  (Back-up)','8':'Person ','9':'',
+                 '0': 'ISA','-':'ISA','=':'Person back up'}
+       await ctx.message.channel.send(member)
+       await ctx.message.channel.send("Please type ***ls arena 123*** to invite members 1,2,3 to join arena :woman_mage:")
+       members = {'1': ID, '2': ID,'3': ID,
+                  '4': ID,'5':ID,'6':ID,
+                  '7': ID,'8':ID,'9':ID,
+                  '0': ID,'-':ID,'=':ID,}
+       numbers = str(ctx.message.content)[9:]
+       print("you selected: ",numbers)
+       selected = ""
+       
+       string = ""
+       for i in numbers:
+           #get ids
+           string = string + "<@!"+ str(members.get(str(i))) + ">\n"
+           selected = selected + str(member.get(str(i))) + "\n"
+       selected = "**" + selected.strip() + "**"
+       string = "rpg arena \n" + string
+       string = """```""" + string + """```"""
+       
+       string2 = str("""```css\nThis is some colored Text```""")
+       embedVar = discord.Embed(title="Selected members:", description=selected, color=0x00ff00)
+       embedVar.add_field(name="Command:", value=string, inline=True)
+       await ctx.message.channel.send(embed=embedVar)
+       #get user's id
+       #user_id = message.author.id
+@bot.command()
+async def miniboss(ctx):
+       member = {'1': 'Person', '2': 'Person','3': 'Person (2nd account)',
+                 '4': 'Person','5':'Person (BANK)','6':'UE',
+                 '7':'Person  (Back-up)','8':'Person ','9':'',
+                 '0': 'ISA','-':'ISA','=':'Person back up'}
+       await ctx.message.channel.send(member)
+       await ctx.message.channel.send("Please type ***ls miniboss 123*** to invite members 1,2,3 to join miniboss :woman_mage:")
+       members = {'1': ID, '2': ID,'3': ID,
+                  '4': ID,'5':ID,'6':ID,
+                  '7': ID,'8':ID,'9':ID,
+                  '0': ID,'-':ID,'=':ID}
+       numbers = str(ctx.message.content)[12:]
+       print("you selected: ",numbers)
+       selected = ""
+       
+       string = ""
+       for i in numbers:
+           string = string + "<@!"+ str(members.get(str(i))) + ">\n"
+           selected = selected + str(member.get(str(i))) + "\n"
+       selected = "**" + selected.strip() + "**"
+       string = "rpg miniboss \n" + string
+       string = """```""" + string + """```"""
+       
+       string2 = str("""```css\nThis is some colored Text```""")
+       embedVar = discord.Embed(title="Selected members:", description=selected, color=0x00ff00)
+       embedVar.add_field(name="Command:", value=string, inline=True)
+       await ctx.message.channel.send(embed=embedVar)
+       #get user's id
+       #user_id = message.author.id
+   
+       
+@bot.command()
+async def inventory(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id 
+       #check if it's a new user
+       users = open("path/books/users.txt","r")
+       data = users.read()
+       if str(user_id) in data:
+           user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+           progress = user_data.iloc[:,[2,3]]
+           print(progress)
+           #get user's current inventory
+           blueb = user_data.iloc[0,7]
+           ava = user_data.iloc[0,8]
+           pota = user_data.iloc[0,9]
+           #tell user how much they have
+           await message.channel.send("Hmm..it seems like you have your cupboard well used there")
+           await message.channel.send("**Your inventory: :basket: \n" + ":blueberries:: " + str(int(blueb)) + "\n"+ ":tomato:" + ":" + str(int(ava)) + "\n"+ ":potato:: " + str(int(pota)) + "\n**")
+@bot.command()
+async def shop(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id 
+       #check if it's a new user
+       users = open("path/books/users.txt","r")
+       data = users.read()
+       if str(user_id) in data:
+           user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+           progress = user_data.iloc[:,[2,3]]
+           print(progress)
+           #get current shop
+           prices = []
+           books = []
+           for i in range(how_many_books):
+               price = user_data.iloc[i,6]
+               prices.append(price)
+               book = user_data.iloc[i,1]
+               books.append(book)
+           A = ""
+           for i in range(how_many_books):
+                A += str(books[i])
+                A += ": "
+                A += str(prices[i])
+                A += ":blueberries:"
+                A += " \n "
+           #tell user the offers
+           await message.channel.send("Our book shop has these on limited offers :books:")
+           await message.channel.send(A)
+           
+@bot.command()
+async def i(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id 
+       #check if it's a new user
+       users = open("path/books/users.txt","r")
+       data = users.read()
+       if str(user_id) in data:
+           user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+           #get user's current inventory
+           blueb = user_data.iloc[0,7]
+           ava = user_data.iloc[0,8]
+           pota = user_data.iloc[0,9]
+           #tell user how much they have
+           await message.channel.send("Hmm..it seems like you have your cupboard well used there")
+           await message.channel.send("**Your inventory: :basket: \n" + ":blueberries:: " + str(int(blueb)) + "\n"+ ":tomato::" + str(int(ava)) + "\n"+ ":potato:: " + str(int(pota)) + "\n**")
+
+
+@bot.command()
+async def progress(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id 
+       #check if it's a new user
+       users = open("path/books/users.txt","r")
+       data = users.read()
+       if str(user_id) in data:
+           user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+           progress = user_data.iloc[:,[2,3]]
+           print(progress)
+           #get user's current book's name
+           user_book_name = user_data[user_data['Current book'] == 1].iloc[0,1]
+           user_progress = user_data[user_data['Current book'] == 1].iloc[0,3]
+           if user_progress > 0:
+               await message.channel.send("You're currently reading page " + str(user_progress-1) + " of " + str(user_book_name) +":scroll:")
+           if user_progress == 0:
+               await message.channel.send("You're currently reading page " + str(user_progress) + " of " + str(user_book_name) +":scroll:")
+           #get book's language
+           book_lang = user_data[user_data['Current book'] == 1].iloc[0,4]
+           #english book
+           if book_lang == 1:
+               #get max page no.
+               user_book_path = user_data[user_data['Current book'] == 1].iloc[0,2]
+               with open("path/books/" + user_book_path,encoding='cp1252') as file:
+                    book = file.read()
+
+               print(type(int(user_progress)*1000))
+               a = len(book)
+               b = int(user_progress)*1000
+               #get percentage
+               c = round((b / a)*100)
+               print((c/10))
+               bar = ""
+               for i in range(round(c/10)):
+                   bar += ":cookie:"
+               antibar = 10 - round(c/10)
+               for j in range(antibar):
+                   bar += ":black_medium_square:"
+               await message.channel.send("**Your progress: **" + bar)
+           #chinese book
+           elif book_lang == 0:
+               user_book_path = user_data[user_data['Current book'] == 1].iloc[0,2]
+               with open("path/books/" + user_book_path,encoding='utf8') as file:
+                    book = file.read()
+
+               print(type(int(user_progress)*500))
+               a = len(book)
+               b = int(user_progress)*500
+               #get percentage
+               c = round((b / a)*100)
+               print((c/10))
+               bar = ""
+               for i in range(round(c/10)):
+                   bar += ":cookie:"
+               antibar = 10 - round(c/10)
+               for j in range(antibar):
+                   bar += ":black_medium_square:"
+               await message.channel.send("**Your progress: **" + bar)
+           
+
+##old stuff
+def gen2(word_length):
+        from random import randint
+        from random import sample
+        import itertools
+        from functools import reduce
+        import operator
+     
+        def unpackTuple(tup):
+         
+           return (reduce(operator.add, tup))
+        cont = 0
+        
+        file = open("/path/Downloads/wordlist.txt", "r")
+        words = []
+        
+        for i in file.readlines():
+           words.append(i.rstrip())
+        print("list len: ", len(words))
+        while cont == 0:
+            index = randint(1,len(words))
+            selected_word = words[index]
+            if len(selected_word) < 5 or len(selected_word)> word_length :
+                cont = 0
+
+            else:
+                cont = 1
+        def split(word):
+           return [char for char in word]
+        
+           
+        puzzle_0 = split(selected_word)
+           
+        print(tuple(puzzle_0))
+        permutations = list(itertools.permutations(selected_word, len(selected_word)))
+        permutations[1:5]
+        
+        puzzle_00 = unpackTuple(sample(permutations,1))
+        puzzle_1 = []
+           
+        for i in puzzle_00:
+               puzzle_1.append(i)
+        problem = [puzzle_1, len(puzzle_0), selected_word]
+        ans.append(puzzle_0)
+        return problem
+    
+@bot.command()
+async def hi(ctx):
+    hi = ["*yawns* Good morning, Jean... Oh it's you! Sorry, dear.",
+          "Hi darling, are you going to be Lisa's little helper? What? Me, a grand mage? That was a long time ago, I'm just a humble librarian now. *chuckles* Don't worry darling, I'll take very good care of you.",
+          "Hi darling. Today's no good for going out... Hmm... Did I say that yesterday as well?",
+          "You're still up? Feel free to use the alchemist's upstairs from the library whenever you want. But make sure you knock first, we wouldn't want you seeing anything you're not supposed to, now would we?"]
+    hi_path =["lisa_jean.mp3","lisa_hi_darling.mp3","lisa_no_good.mp3","lisa_upstairs.mp3"]
+    #await ctx.message.channel.send(hi[randint(0,3)])
+    dialogue = randint(0,3)
+    await ctx.message.channel.send(hi[dialogue])
+    connected = ctx.author.voice
+    if connected:
+        vc = await connected.channel.connect()
+        source = discord.FFmpegOpusAudio(source=hi_path[dialogue],bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+        vc.play(source=source,after=None)
+        while vc.is_playing():
+            await sleep(1)
+        await vc.disconnect()
+
+
+@bot.command()
+
+async def shelf(message):
+  #get current shop
+  user_id = message.author.id 
+  user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+  books = []
+  for i in range(how_many_books):
+               
+      book = user_data.iloc[i,1]
+      books.append(book)
+  A = ""
+  for i in range(how_many_books):
+                A += str(i+1)
+                A += ": "
+                A += str(books[i])
+                A += " \n "
+  await message.channel.send("Looks like we have \n"+ A)
+  time.sleep(2)
+  await message.channel.send("So, which book would you like to read today?..:books:")
+  await message.channel.send("type *'change <no.>'* to let me know")
+
+@bot.command()
+async def play(ctx):
+  #get user's id
+  user_id = ctx.author.id
+  
+  await ctx.message.channel.send("Come a little closer. You're in for a little wordscape.:books:")
+  #check if user already has an existing puzzle, if yes, delete old one and start new
+  #open solution data
+  sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+  user_idd = "a" + str(user_id) + "a"
+  existing_users = sols_data[pd.notna(sols_data['sol'])]["id"].tolist()
+  print(existing_users)
+  if user_idd in existing_users:
+      #reset bonus if started new puzzle
+      user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+      user_data.iloc[0,11] = 0
+      user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+      await ctx.message.channel.send("You have started a new puzzle")
+      ##problem = generator()
+      problem = gen2(6)
+      print("The puzzle is: ", problem[0])
+      print("Find a ", problem[1], "-letter word for me.")
+      print("The solutions are: ", problem[2] )
+      prob = str(problem[0])
+      num = str(problem[1])
+      one_sol = problem[2]
+      sols = [one_sol]
+      chosen_index = sols_data[sols_data["id"]==user_idd].iloc[0,0]
+      #add solution
+      sols_data.iloc[chosen_index-1,1] = one_sol
+      #add "a" at both ends of user id so csv can record accurately
+      sols_data.iloc[chosen_index-1,2] = "a"+str(user_id)+"a"
+      #add length of word
+      sols_data.iloc[chosen_index-1,3] = num
+      sols_data.to_csv("path/books/wordscape.csv",index=False,float_format='%f')
+      
+  else:
+      print("you don't have a puzzle yet, start new one now")
+      ##problem = generator()
+      problem = gen2(6)
+      print("The puzzle is: ", problem[0])
+      print("Find a ", problem[1], "-letter word for me.")
+      print("The solutions are: ", problem[2] )
+      prob = str(problem[0])
+      num = str(problem[1])
+      one_sol = problem[2]
+      sols = [one_sol]
+      open('copy.txt', 'w').close()
+      wordscape = open("wordscape.txt", "w")
+      wordscape.write(str(sols[0]).lstrip('[').rstrip(']'))
+      wordscape.close()
+      #record solution and user id
+      #open solution data
+      sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+      #find all rows where it's not NA; sols contains all current solutions
+      index = sols_data[pd.isna(sols_data['sol'])]["index"].tolist()
+      chosen_index = sample(index,1)[0]
+      print("chosen index is ",chosen_index)
+      #add solution
+      sols_data.iloc[chosen_index-1,1] = one_sol
+      #add "a" at both ends of user id so csv can record accurately
+      sols_data.iloc[chosen_index-1,2] = "a"+str(user_id)+"a"
+      print(sols_data.iloc[chosen_index-1,2])
+      sols_data.iloc[chosen_index-1,3] = num
+      sols_data.to_csv("path/books/wordscape.csv",index=False,float_format='%f')
+  
+  
+  await ctx.message.channel.send("The puzzle is: " +  "**"+  prob.lstrip('[').rstrip(']')+  "**")
+  await ctx.message.channel.send("Find a " + num + "-letter word for me.")
+
+@bot.command()
+async def challenge(ctx):
+  #get users id
+  user_id = ctx.author.id
+  
+  await ctx.message.channel.send("Come a little closer. You're in for a little wordscape.:books:")
+  #check if user already has an existing puzzle, if yes, delete old one and start new
+  #open solution data
+  sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+  user_idd = "a" + str(user_id) + "a"
+  existing_users = sols_data[pd.notna(sols_data['sol'])]["id"].tolist()
+  print(existing_users)
+  if user_idd in existing_users:
+      #reset bonus if started new puzzle
+      user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+      user_data.iloc[0,11] = 0
+      user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+      await ctx.message.channel.send("You have started a new puzzle")
+      ##problem = generator()
+      problem = gen2(9)
+      print("The puzzle is: ", problem[0])
+      print("Find a ", problem[1], "-letter word for me.")
+      print("The solutions are: ", problem[2] )
+      prob = str(problem[0])
+      num = str(problem[1])
+      one_sol = problem[2]
+      sols = [one_sol]
+      chosen_index = sols_data[sols_data["id"]==user_idd].iloc[0,0]
+      #add solution
+      sols_data.iloc[chosen_index-1,1] = one_sol
+      #add "a" at both ends of user id so csv can record accurately
+      sols_data.iloc[chosen_index-1,2] = "a"+str(user_id)+"a"
+      #add length of word
+      sols_data.iloc[chosen_index-1,3] = num
+      sols_data.to_csv("path/books/wordscape.csv",index=False,float_format='%f')
+      
+  else:
+      print("you don't have a puzzle yet, start new one now")
+      ##problem = generator()
+      problem = gen2(6)
+      print("The puzzle is: ", problem[0])
+      print("Find a ", problem[1], "-letter word for me.")
+      print("The solutions are: ", problem[2] )
+      prob = str(problem[0])
+      num = str(problem[1])
+      one_sol = problem[2]
+      sols = [one_sol]
+      open('copy.txt', 'w').close()
+      wordscape = open("wordscape.txt", "w")
+      wordscape.write(str(sols[0]).lstrip('[').rstrip(']'))
+      wordscape.close()
+      #record solution and user id
+      #open solution data
+      sols_data = pd.read_csv("path/books/wordscape.csv",header=0)
+      #find all rows where it's not NA; sols contains all current solutions
+      index = sols_data[pd.isna(sols_data['sol'])]["index"].tolist()
+      chosen_index = sample(index,1)[0]
+      print("chosen index is ",chosen_index)
+      #add solution
+      sols_data.iloc[chosen_index-1,1] = one_sol
+      #add "a" at both ends of user id so csv can record accurately
+      sols_data.iloc[chosen_index-1,2] = "a"+str(user_id)+"a"
+      print(sols_data.iloc[chosen_index-1,2])
+      sols_data.iloc[chosen_index-1,3] = num
+      sols_data.to_csv("path/books/wordscape.csv",index=False,float_format='%f')
+  
+  
+  await ctx.message.channel.send("The puzzle is: " +  "**"+  prob.lstrip('[').rstrip(']')+  "**")
+  await ctx.message.channel.send("Find a " + num + "-letter word for me.")
+
+@bot.command()
+async def theme(ctx):
+    await ctx.message.channel.send("*sigh* Perfect weather for sipping a cup of tea while gazing out the window.")
+    connected = ctx.author.voice
+    if connected:
+        vc = await connected.channel.connect()
+        source = discord.FFmpegOpusAudio(source="lisa_theme.mp3",bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+        vc.play(source=source,after=None)
+        while vc.is_playing():
+            await sleep(1)
+        await vc.disconnect()
+
+@bot.command()
+async def bye(ctx):
+    bye = ["It must almost be time for a nap...",
+           "So soon? When I taught Razor how to utilize Elemental Energy, I never expected him to master the technique so quickly. Come to think of it, you're talented too. Maybe I could teach you a few tricks...but now, it's nearly time for afternoon tea.",
+           "What's that? You want to learn some Sumeru Arcademia magic? I'm afraid it might too much for you to handle right now...Talk to me next time and I suppose it can't hurt to teach you some of the basics.", "Hey darling, would you like to try one of my magic potions before going? There's no knowing what it will do to you until you try it, though... Don't say I didn't warn you!",
+           "So soon? Do you want to try one of my magical potion? There's no knowing what it will do to you..don't say I didn't warn you"]
+    index = randint(0,3)
+    if index == 3:
+        connected = ctx.author.voice
+        if connected:
+            vc = await connected.channel.connect()
+            source = discord.FFmpegOpusAudio(source="lisa_potion.mp3",bitrate=128, codec=None, executable="path/ffmpeg", pipe=False, stderr=None, before_options=None, options=None)
+            vc.play(source=source,after=None)
+            while vc.is_playing():
+                await sleep(1)
+            await vc.disconnect()
+    await ctx.message.channel.send(bye[index])
+
+@bot.command()
+async def commands(ctx):
+    with open('commands.txt','r') as file:
+        data = file.read()
+    await ctx.message.channel.send(data)
+
+
+@bot.command()
+async def fortune(message):
+    
+    #get id
+    user_id = message.author.id
+    #get user data
+    user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+    #get sign
+    sign = str(user_data.iloc[0,10])
+    
+    #get user's current inventory
+    blueb = user_data.iloc[0,7]
+    toma = user_data.iloc[0,8]
+    pota = user_data.iloc[0,9]
+    if int(toma) >= 1 and int(blueb)>= 1:
+        #update new balance
+        old_blue = int(user_data.iloc[0,7])
+        user_data.iloc[0,7] = int(old_blue) - 1
+        old_toma = int(user_data.iloc[0,8]) 
+        user_data.iloc[0,8] = int(old_toma) - 1
+        user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+        await message.channel.send("***:crystal_ball:The mystery of the " +sign+" unfolds before you...it reads: ***")
+        await message.channel.send("*" + get_fortune(sign).strip() + "*")
+        time.sleep(1)
+        await message.channel.send("One blueberry and tomato have been charged for this prophecy.")
+    else:
+        await message.channel.send("I'm afraid I ran out of magical potion to perform the *prophecy spell* today.. ")
+
+
+@bot.command()
+async def r(message):
+    if message.author == bot.user:
+        return
+    else:
+       #get user's id
+       user_id = message.author.id
+       print(user_id)
+       #check if it's a new user
+       users = open("path/books/users.txt","r")
+       data = users.read()
+       if str(user_id) in data: 
+           #open user's profile
+           user_data = pd.read_csv("path/books/" + str(user_id) + ".csv")
+           #get user's current book no
+           user_current = user_data[user_data['Current book'] == 1].iloc[0,0]
+           print("book no: ",str(user_current))
+           #get user's current book's name
+           user_book_name = user_data[user_data['Current book'] == 1].iloc[0,1]
+           print("book name: ",str(user_book_name))
+           #get user's current book's path
+           user_book_path = user_data[user_data['Current book'] == 1].iloc[0,2]
+           print("book path: ",str(user_book_path))
+           #get user's current book's progress
+           user_progress = user_data[user_data['Current book'] == 1].iloc[0,3]
+           print("user_progress : ",str(user_progress))
+           #get book's language
+           book_lang = user_data[user_data['Current book'] == 1].iloc[0,4]
+           print("book lang: ",book_lang)
+           #get book's price
+           book_price = int(user_data[user_data['Current book'] == 1].iloc[0,6])
+           #get user's inventory
+           user_money = int(user_data.iloc[0,7])
+           #check if user has enough money
+           if user_money >= book_price:
+           #open user's book
+               if book_lang == 1:
+                   with open("path/books/" + user_book_path,encoding='cp1252') as file:
+                       book_raw = file.read()
+                       #.replace('\n', '')
+                   page = user_progress * 1000
+                   next_page = page + 1000
+                   book = book_raw[page:next_page]+ "..."
+                   await message.message.channel.send("***The story goes like this...*** :scroll:" + book)
+                   file.close()
+                   #record the page change
+                   user_data.iloc[user_current-1,3] = user_progress + 1
+                   #update new balance
+                   user_data.iloc[0,7] = user_money - book_price
+                   user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+               if book_lang == 0:
+                   with open("path/books/" + user_book_path,encoding='utf8') as file:
+                       book_raw = file.read()
+                   page = user_progress * 500
+                   next_page = page + 500
+                   book = book_raw[page:next_page]+ "..."
+                   await message.message.channel.send("***The story goes like this...*** :scroll:" + book)
+                   file.close()
+                   #record the page change
+                   user_data.iloc[user_current-1,3] = user_progress + 1
+                   #update new balance
+                   user_data.iloc[0,7] = user_money - book_price
+                   user_data.to_csv("path/books/" + str(user_id) + ".csv",index=False)
+               if user_money-book_price < 4:
+                  await message.channel.send("*Reminder: you only have three blueberries left!*")
+           else:
+
+              await message.channel.send("You ran out of blueberries..go find some to continue reading!:palm_tree:")
+       else:
+            await message.channel.send("Sorry, but you are not a member of the club.")
+
+bot.run(token)
+
